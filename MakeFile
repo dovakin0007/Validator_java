@@ -1,0 +1,47 @@
+#TODO: This is AI generated MakeFile review needs to be checked for correctness and completeness.
+
+APP_NAME=my-spring-app
+JAR_FILE=target/$(APP_NAME).jar
+DOCKER_COMPOSE_FILE=docker-compose.yml
+
+.PHONY: build run clean test package docker-build docker-up docker-down docker-logs
+
+# Build JAR without tests
+build:
+	mvn clean package -DskipTests
+
+# Build with tests
+package:
+	mvn clean package
+
+# Run app using Maven
+run:
+	mvn spring-boot:run
+
+# Run packaged JAR
+run-jar: build
+	java -jar $(JAR_FILE)
+
+# Run unit tests
+test:
+	mvn test
+
+# Clean target directory
+clean:
+	mvn clean
+
+# Build Docker image
+docker-build: build
+	docker build -t $(APP_NAME):latest .
+
+# Start services with Docker Compose
+docker-up:
+	docker-compose -f $(DOCKER_COMPOSE_FILE) up -d
+
+# Stop services
+docker-down:
+	docker-compose -f $(DOCKER_COMPOSE_FILE) down
+
+# View logs from docker-compose
+docker-logs:
+	docker-compose -f $(DOCKER_COMPOSE_FILE) logs -f

@@ -29,6 +29,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+
+// TODO: is there a better way to do this?
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -70,7 +72,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     List<SimpleGrantedAuthority> authorities = customClaims.getRole().stream()
                             .flatMap(role -> role.getAuthorities().stream())
                             .collect(Collectors.toList());
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(customClaims, null,
+                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(customClaims,
+                            null,
                             authorities);
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(auth);
