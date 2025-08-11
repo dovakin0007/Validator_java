@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package user;
+
+import "google/protobuf/empty.proto";
+
+option java_package = "com.yourcompany.userservice";
+option java_multiple_files = true;
+
+// User message matching the Java record fields
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  optional string avatarUrl = 4;
+  string createdAt = 5;
+  string updatedAt = 6;
+  optional string bio = 7;
+}
+
+// Request message to create a user
+message CreateUserRequest {
+  string name = 1;
+  string email = 2;
+}
+
+// Response message for listAllUser method
+message ListUsersResponse {
+  repeated User users = 1;
+}
+
+// Request message to get a user by id
+message GetUserRequest {
+  string id = 1;
+}
+
+// User service definition
+service UserService {
+  // Creates a new user and returns the created User
+  rpc CreateUser(CreateUserRequest) returns (User);
+
+  // Lists all users; returns an empty list if none
+  rpc ListAllUser(google.protobuf.Empty) returns (ListUsersResponse);
+
+  // Gets a specific user by id; returns empty if not found
+  rpc GetSpecificUser(GetUserRequest) returns (User);
+}
