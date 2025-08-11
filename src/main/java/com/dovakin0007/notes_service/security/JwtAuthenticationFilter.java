@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -34,12 +36,14 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
     @Value("${jwt.secret}")
     private String jwtSecret;
 
     @PostConstruct
     public void init() {
-        System.out.println("Injected jwtSecret: " + jwtSecret);
+        log.info("JWT Secret Key initialized {}", jwtSecret);
     }
 
     private SecretKey getSigningKey() {
@@ -65,7 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 Claims claims = parseToken(token);
                 Date exp = claims.getExpiration(); // This will throw an exception if the token is expired
-                System.out.println("Token expiration date: " + exp);
+                log.info("Token is valid, expiration: {}", exp);
                 CustomClaims customClaims = CustomClaims.fromClaims(claims);
 
                 if (customClaims.getUser_id() != null && "access".equals(customClaims.getType())) {
@@ -80,7 +84,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
 
             } catch (io.jsonwebtoken.JwtException | IllegalArgumentException ex) {
-                System.err.println("JWT validation failed: " + ex.getMessage());
+                log.error("Invalid JWT token: {}", ex.getMessage());
                 SecurityContextHolder.clearContext();
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;

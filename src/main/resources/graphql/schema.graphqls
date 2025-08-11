@@ -1,0 +1,141 @@
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  avatarUrl: String
+  createdAt: String!
+  updatedAt: String!
+  bio: String
+}
+
+type Project {
+  id: ID!
+  owner: User!
+  name: String!
+  description: String
+  members: [ProjectMember!]!
+  tasks: [Task!]!
+  notes: [Note!]!
+  createdBy: User!
+  createdAt: String!
+  updatedAt: String!
+  status: ProjectStatus!
+}
+
+enum ProjectStatus {
+  OPEN
+  CLOSED
+}
+
+type ProjectMember {
+  id: ID!
+  user: User!
+  role: ProjectRole!
+  addedAt: String!
+}
+
+enum ProjectRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+type Task {
+  id: ID!
+  projectId: ID!
+  createdBy: User!
+  title: String!
+  description: String
+  status: TaskStatus!
+  priority: TaskPriority!
+  dueDate: String
+  assignees: [User!]!
+  comments: [TaskComment!]
+  createdAt: String!
+  updatedAt: String
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+type TaskComment {
+  id: ID!
+  taskId: ID!
+  author: User!
+  content: String!
+  createdAt: String!
+  updatedAt: String
+}
+
+type Note {
+  id: ID!
+  projectId: ID!
+  author: User!
+  title: String!
+  content: String
+  isPinned: Boolean!
+  tags: [String!]!
+  revisions: [NoteRevision!]!
+  attachments: [Attachment!]
+  createdAt: String!
+  updatedAt: String!
+}
+
+type NoteRevision {
+  id: ID!
+  content: String
+  editor: User
+  editedAt: String!
+}
+
+type Attachment {
+  id: ID!
+  url: String!
+  fileName: String!
+  fileType: String!
+  uploadedAt: String!
+}
+
+type Query {
+  getUser(id: ID!): User
+  listUsers: [User!]!
+
+  getProject(id: ID!): Project
+  listProjects: [Project!]!
+
+  getTask(id: ID!): Task
+  listTasks(projectId: ID!): [Task!]!
+  listOpenTasks(projectId: ID!): [Task!]!
+  listCompletedTasks(projectId: ID!): [Task!]!
+
+  getNote(id: ID!): Note
+  listNotes(projectId: ID!): [Note!]!
+}
+type Mutation {
+  createUser(name: String!, email: String!): User!
+  updateUser(email: String, avatarUrl: String, bio: String): User!
+
+  createProject(name: String!, description: String): Project!
+  addProjectMember(projectId: ID!, userId: ID!, role: ProjectRole!): ProjectMember!
+  openProject(projectId: ID!): Project!
+  closeProject(projectId: ID!): Project!
+
+  createTask(projectId: ID!, title: String!, description: String, priority: TaskPriority, dueDate: String): Task!
+  updateTaskStatus(taskId: ID!, status: TaskStatus!): Task!
+  deleteTask(id: ID!): Boolean!
+  addTaskComment(taskId: ID!, authorId: ID!, content: String!): TaskComment!
+  deleteTaskComment(id: ID!): Boolean!
+
+  createNote(projectId: ID!, title: String!, content: String, tags: [String!]): Note!
+  updateNote(noteId: ID!, title: String, content: String, tags: [String!]): Note!
+  deleteNote(noteId: ID!): Boolean!
+}
