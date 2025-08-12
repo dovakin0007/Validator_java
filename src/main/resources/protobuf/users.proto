@@ -4,7 +4,7 @@ package user;
 
 import "google/protobuf/empty.proto";
 
-option java_package = "com.yourcompany.userservice";
+option java_package = "com.dovakin0007.userservice";
 option java_multiple_files = true;
 
 // User message matching the Java record fields
