@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 
 import com.dovakin0007.notes_service.models.User;
+import com.dovakin0007.notes_service.service.GrpcUserService;
 import com.dovakin0007.notes_service.service.UserService;
 
 @Controller
@@ -20,9 +21,14 @@ public class UsersController {
 
     private final UserService service;
 
-    public UsersController(UserService service) {
+    private final GrpcUserService grpcUserService;
+
+    public UsersController(UserService service, GrpcUserService grpcUserService) {
         this.service = service;
+        this.grpcUserService = grpcUserService;
     }
+
+
 
     @QueryMapping
     @PreAuthorize("hasRole('USER')")
@@ -34,9 +40,9 @@ public class UsersController {
     }
 
     @MutationMapping
-    @PreAuthorize("hasRole('ADMIN') || hasRole('USER')")
+    // @PreAuthorize("hasRole('ADMIN') || hasRole('USER')")
     public CompletionStage<User> createUser(@Argument String name, @Argument String email) {
-        return service.createUser(name, email).thenApply(opt -> opt);
+        return grpcUserService.createUser(name, email).thenApply(u -> u);
     }
 
     @QueryMapping

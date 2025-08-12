@@ -7,7 +7,7 @@ import "google/protobuf/empty.proto";
 option java_package = "com.dovakin0007.userservice";
 option java_multiple_files = true;
 
-// User message matching the Java record fields
+// User message
 message User {
   string id = 1;
   string name = 2;
@@ -24,6 +24,11 @@ message CreateUserRequest {
   string email = 2;
 }
 
+// Response message for creating a user
+message CreateUserResponse {
+  User user = 1;
+}
+
 // Response message for listAllUser method
 message ListUsersResponse {
   repeated User users = 1;
@@ -36,12 +41,12 @@ message GetUserRequest {
 
 // User service definition
 service UserService {
-  // Creates a new user and returns the created User
-  rpc CreateUser(CreateUserRequest) returns (User);
+  // Creates a new user and returns the created user wrapped in a response
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
 
-  // Lists all users; returns an empty list if none
+  // Lists all users
   rpc ListAllUser(google.protobuf.Empty) returns (ListUsersResponse);
 
-  // Gets a specific user by id; returns empty if not found
+  // Gets a specific user by id
   rpc GetSpecificUser(GetUserRequest) returns (User);
 }
