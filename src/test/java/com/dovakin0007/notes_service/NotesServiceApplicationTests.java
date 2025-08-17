@@ -19,6 +19,8 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import com.dovakin0007.notes_service.service.GrpcUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,19 +31,22 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.dovakin0007.notes_service.controller.UsersController;
 import com.dovakin0007.notes_service.models.User;
-import com.dovakin0007.notes_service.service.UserService;
+// import com.dovakin0007.notes_service.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class UsersControllerTest {
 
+    // @Mock
+    // private UserService userService;
+
     @Mock
-    private UserService userService;
+    private GrpcUserService grpcUserService;
 
     private UsersController usersController;
 
     @BeforeEach
     void setUp() {
-        usersController = new UsersController(userService);
+        usersController = new UsersController(grpcUserService);
     }
 
     @Test
@@ -51,17 +56,16 @@ class UsersControllerTest {
         User user2 = new User("2", "Jane Smith", "jane@example.com", "avatar2.jpg", "2024-01-02", "2024-01-02", "Bio 2");
         List<User> expectedUsers = List.of(user1, user2);
         
-        when(userService.listAllUser())
-            .thenReturn(CompletableFuture.completedFuture(Optional.of(expectedUsers)));
+        when(grpcUserService.listAllUsers());
 
         // When
-        List<User> actualUsers = usersController.listUsers().toCompletableFuture().get();
+        List<User> actualUsers = usersController.listUsers();
 
         // Then
         assertNotNull(actualUsers);
         assertEquals(2, actualUsers.size());
         assertEquals("John Doe", actualUsers.get(0).name());
-        verify(userService).listAllUser();
+        verify(grpcUserService).listAllUsers();
     }
 
     @Test
@@ -71,7 +75,7 @@ class UsersControllerTest {
         String email = "john@example.com";
         User expectedUser = new User("1", name, email, "avatar.jpg", "2024-01-01", "2024-01-01", "Test bio");
         
-        when(userService.createUser(name, email))
+        when(grpcUserService.createUser(name, email))
             .thenReturn(CompletableFuture.completedFuture(expectedUser));
 
         // When
@@ -82,6 +86,6 @@ class UsersControllerTest {
         assertEquals("1", actualUser.id());
         assertEquals(name, actualUser.name());
         assertEquals(email, actualUser.email());
-        verify(userService).createUser(name, email);
+        verify(grpcUserService).createUser(name, email);
     }
 }
