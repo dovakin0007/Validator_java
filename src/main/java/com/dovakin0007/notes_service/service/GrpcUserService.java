@@ -1,36 +1,36 @@
 package com.dovakin0007.notes_service.service;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-
+import com.dovakin0007.notes_service.exceptions.UserCreationFailedException;
+import com.dovakin0007.notes_service.exceptions.UserNotAvailableException;
 import com.dovakin0007.notes_service.models.User;
-import com.dovakin0007.userservice.CreateUserRequest;
-import com.dovakin0007.userservice.CreateUserResponse;
-import com.dovakin0007.userservice.GetUserRequest;
-import com.dovakin0007.userservice.ListUsersResponse;
-import com.dovakin0007.userservice.UserServiceGrpc;
+import com.dovakin0007.userservice.*;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.Empty;
-
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.grpc.StatusRuntimeException;
 import lombok.NonNull;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 public class GrpcUserService {
 
-    @GrpcClient("user-service") // This must match your application.properties grpc.client.<name>...
+    @GrpcClient("user-service")
     private UserServiceGrpc.UserServiceFutureStub userNonBlockingStub;
 
     @GrpcClient("user-service")
     private UserServiceGrpc.UserServiceBlockingStub userBlockingStub;
 
-    public CompletableFuture<User> createUser(@NonNull String name, @NonNull String email)  {
+    @CircuitBreaker(name = "createNewUser", fallbackMethod = "createNewUserFallback")
+    public CompletableFuture<User> createUser(@NonNull String name, @NonNull String email) {
         try {
             var request = CreateUserRequest.newBuilder()
                     .setName(name)
@@ -57,6 +57,15 @@ public class GrpcUserService {
         }
     }
 
+    public CompletableFuture<User> createNewUserFallback(@NonNull String name, @NonNull String email, Throwable t) {
+        return CompletableFuture.failedFuture(
+              new UserCreationFailedException("Failed to create user", t)
+        );
+    }
+
+
+
+    @CircuitBreaker(name = "listUsers", fallbackMethod = "listUsersFallback")
     public List<User> listAllUsers() {
         try {
             ListUsersResponse response = userBlockingStub.listAllUser(Empty.getDefaultInstance());
@@ -68,6 +77,11 @@ public class GrpcUserService {
         }
     }
 
+    public List<User> listUsersFallback(Throwable t) {
+        return Collections.emptyList();
+    }
+
+    @CircuitBreaker(name = "getUser", fallbackMethod="getUserFallback")
     public User getSpecificUser(String id) {
         try {
             var request = GetUserRequest.newBuilder()
@@ -80,6 +94,10 @@ public class GrpcUserService {
             throw new RuntimeException("Failed to get user: " + e.getStatus(), e);
         }
     }
+    public User getUserFallback(String id, Throwable t) {
+        throw new UserNotAvailableException("User service unavailable, could not fetch user with id: " + id);
+    }
+
 
 
     private User mapUser(com.dovakin0007.userservice.User protoUser) {
@@ -91,9 +109,5 @@ public class GrpcUserService {
                 protoUser.getCreatedAt(),
                 protoUser.getUpdatedAt(),
                 protoUser.hasBio() ? protoUser.getBio() : null);
-    }
-
-    public void listAllUser() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
