@@ -9,7 +9,7 @@
 ################################################################################
 
 # Create a stage for resolving and downloading dependencies.
-FROM eclipse-temurin:24-jdk-jammy as deps
+FROM openjdk:21-jdk as deps
 
 WORKDIR /build
 
@@ -66,18 +66,16 @@ RUN java -Djarmode=layertools -jar target/app.jar extract --destination target/e
 # most recent version of that tag when you build your Dockerfile.
 # If reproducibility is important, consider using a specific digest SHA, like
 # eclipse-temurin@sha256:99cede493dfd88720b610eb8077c8688d3cca50003d76d1d539b0efc8cca72b4.
-FROM eclipse-temurin:24-jre-jammy AS final
+FROM openjdk:21-jdk AS final
 
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
 ARG UID=10001
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
+RUN useradd \
+    --uid ${UID} \
+    --home-dir /nonexistent \
+    --shell /usr/sbin/nologin \
     --no-create-home \
-    --uid "${UID}" \
     appuser
 USER appuser
 
@@ -87,6 +85,6 @@ COPY --from=extract build/target/extracted/spring-boot-loader/ ./
 COPY --from=extract build/target/extracted/snapshot-dependencies/ ./
 COPY --from=extract build/target/extracted/application/ ./
 
-EXPOSE 8081
+EXPOSE 8085
 
 ENTRYPOINT [ "java", "org.springframework.boot.loader.launch.JarLauncher" ]

@@ -78,7 +78,7 @@ type TaskComment {
 
 type Note {
   id: ID!
-  projectId: ID!
+  projectId: ID
   author: User!
   title: String!
   content: String

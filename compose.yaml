@@ -8,17 +8,25 @@
 # database or a cache. For examples, see the Awesome Compose repository:
 # https://github.com/docker/awesome-compose
 services:
+  consul:
+    image: consul:1.15.4
+    container_name: consul
+    ports:
+      - "8500:8500"   # HTTP UI / API
+      - "8600:8600/udp" # DNS
+    command: "agent -dev -client=0.0.0.0"
+    restart: always
   app:
     build: .
     container_name: notes-gateway
     image: dovakin0007/notes-gateway:latest
     restart: always
     ports:
-      - "8081:8081"
+      - "8085:8085"
     environment:
       SPRING_PROFILES_ACTIVE: dev
     depends_on:
-      - db
+      - consul
 
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to
