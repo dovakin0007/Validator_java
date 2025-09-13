@@ -14,13 +14,12 @@
 package com.dovakin0007.notes_service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.dovakin0007.notes_service.service.GrpcUserService;
+import com.dovakin0007.notes_service.service.GrpcUserClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +39,7 @@ class UsersControllerTest {
     // private UserService userService;
 
     @Mock
-    private GrpcUserService grpcUserService;
+    private GrpcUserClient grpcUserService;
 
     private UsersController usersController;
 

@@ -14,14 +14,13 @@ import lombok.NonNull;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
-public class GrpcUserService {
+public class GrpcUserClient {
 
     @GrpcClient("user-service")
     private UserServiceGrpc.UserServiceFutureStub userNonBlockingStub;
@@ -59,10 +58,9 @@ public class GrpcUserService {
 
     public CompletableFuture<User> createNewUserFallback(@NonNull String name, @NonNull String email, Throwable t) {
         return CompletableFuture.failedFuture(
-              new UserCreationFailedException("Failed to create user", t)
+                new UserCreationFailedException("Failed to create user", t)
         );
     }
-
 
 
     @CircuitBreaker(name = "listUsers", fallbackMethod = "listUsersFallback")
@@ -81,7 +79,7 @@ public class GrpcUserService {
         return Collections.emptyList();
     }
 
-    @CircuitBreaker(name = "getUser", fallbackMethod="getUserFallback")
+    @CircuitBreaker(name = "getUser", fallbackMethod = "getUserFallback")
     public User getSpecificUser(String id) {
         try {
             var request = GetUserRequest.newBuilder()
@@ -94,10 +92,10 @@ public class GrpcUserService {
             throw new RuntimeException("Failed to get user: " + e.getStatus(), e);
         }
     }
+
     public User getUserFallback(String id, Throwable t) {
         throw new UserNotAvailableException("User service unavailable, could not fetch user with id: " + id);
     }
-
 
 
     private User mapUser(com.dovakin0007.userservice.User protoUser) {
